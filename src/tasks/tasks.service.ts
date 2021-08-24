@@ -12,23 +12,11 @@ export class TasksService {
     @InjectRepository(TasksRepository)
     private tasksRepository: TasksRepository,
   ) {}
-  // getAllTasks(): Task[] {
-  //   return this.tasks;
-  // }
-  // getAllTasksWithFilters(filterDto: GetTasksFilterDto): Task[] {
-  //   const { status, search } = filterDto;
-  //   let tasks = this.getAllTasks();
-  //   if (status) {
-  //     tasks = tasks.filter((task) => task.status === status);
-  //   }
-  //   if (search) {
-  //     tasks = tasks.filter(
-  //       (task) =>
-  //         task.title.includes(search) || task.description.includes(search),
-  //     );
-  //   }
-  //   return tasks;
-  // }
+
+  async getTasks(filterDto: GetTasksFilterDto): Promise<Task[]> {
+    return this.tasksRepository.getTasks(filterDto);
+  }
+
   async getTaskById(id: string): Promise<Task> {
     const task = await this.tasksRepository.findOne(id);
     if (!task) {
@@ -41,21 +29,20 @@ export class TasksService {
     return this.tasksRepository.createTask(createTaskDto);
   }
 
-  // deleteTaskById(id: string): void {
-  //   const found = this.getTaskById(id);
-  //   this.tasks = this.tasks.filter((task) => task.id !== found.id);
-  // }
-  // updateTaskStatus(id: string, status: TaskStatus): Task {
-  //   // if (!isValidTaskStatus(status)) {
-  //   //   return new UnprocessableEntityException(
-  //   //     'Invalid status provided.',
-  //   //   ).getResponse();
-  //   // }
-  //   const updatedTask = this.getTaskById(id);
-  //   updatedTask.status = status;
-  //   this.tasks = this.tasks.map((task) =>
-  //     task.id === id ? updatedTask : task,
-  //   );
-  //   return updatedTask;
-  // }
+  async deleteTaskById(id: string): Promise<void> {
+    const deleted = await this.tasksRepository.delete(id);
+
+    if (deleted.affected < 1) {
+      throw new NotFoundException();
+    }
+  }
+
+  async updateTaskStatus(id: string, status: TaskStatus): Promise<Task> {
+    const task = await this.getTaskById(id);
+    task.status = status;
+
+    await this.tasksRepository.save(task);
+
+    return task;
+  }
 }
