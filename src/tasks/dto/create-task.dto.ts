@@ -8,10 +8,3 @@ export class CreateTaskDto {
   @IsNotEmpty()
   description: string;
 }
-
-export class UpdateTaskStatusDto {
-  @IsEnum(TaskStatus, {
-    message: 'Invalid task status',
-  })
-  status: TaskStatus;
-}
