@@ -16,7 +16,6 @@ export class TasksRepository extends Repository<Task> {
     }
 
     if (search) {
-      console.log(`%${search}%`);
       query.andWhere(
         'task.title ILIKE :search OR task.description ILIKE :search',
         { search: `%${search}%` },
