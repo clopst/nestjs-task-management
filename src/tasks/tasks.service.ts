@@ -29,20 +29,24 @@ export class TasksService {
     return this.tasksRepository.createTask(createTaskDto, user);
   }
 
-  async deleteTaskById(id: string): Promise<void> {
-    const deleted = await this.tasksRepository.delete(id);
+  async deleteTaskById(id: string, user: User): Promise<void> {
+    const deleted = await this.tasksRepository.delete({ id, user });
 
     if (deleted.affected < 1) {
       throw new NotFoundException();
     }
   }
 
-  // async updateTaskStatus(id: string, status: TaskStatus): Promise<Task> {
-  //   const task = await this.getTaskById(id);
-  //   task.status = status;
+  async updateTaskStatus(
+    id: string,
+    status: TaskStatus,
+    user: User,
+  ): Promise<Task> {
+    const task = await this.getTaskById(id, user);
+    task.status = status;
 
-  //   await this.tasksRepository.save(task);
+    await this.tasksRepository.save(task);
 
-  //   return task;
-  // }
+    return task;
+  }
 }
