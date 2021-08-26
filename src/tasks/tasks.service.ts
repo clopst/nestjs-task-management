@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { TaskStatus } from './task-status.enum';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter-dto';
@@ -9,6 +14,8 @@ import { User } from 'src/auth/user.entity';
 
 @Injectable()
 export class TasksService {
+  private logger = new Logger('TasksService', { timestamp: true });
+
   constructor(
     @InjectRepository(TasksRepository) private tasksRepository: TasksRepository,
   ) {}
@@ -45,7 +52,14 @@ export class TasksService {
     const task = await this.getTaskById(id, user);
     task.status = status;
 
-    await this.tasksRepository.save(task);
+    try {
+      await this.tasksRepository.save(task);
+    } catch (error) {
+      this.logger.error(
+        `Failed to updateTaskStatus for task "${id}" by "${user.username}"`,
+      );
+      throw new InternalServerErrorException();
+    }
 
     return task;
   }
